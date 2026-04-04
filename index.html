@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Marathon Hub">
+<title>Marathon Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080c12;--sur:#0e1420;--sur2:#131c2a;--bor:#1e2840;--bor2:#253050;--acc:#4a9fd4;--adim:#0a1825;--grn:#3fb950;--yel:#e6a817;--pur:#a78bfa;--mut:#4a5568;--txt:#e2e8f4;--txt2:#7a8ba8;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-weight:300;height:100%;overflow:hidden;}
+.shell{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;}
+.hdr{padding:calc(var(--st) + 10px) 20px 10px;background:var(--bg);border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.aname{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:var(--acc);}
+.asub{font-size:10px;color:var(--mut);letter-spacing:1px;margin-top:1px;}
+.cnum{font-family:'DM Mono',monospace;font-size:24px;color:var(--txt);line-height:1;text-align:right;}
+.clbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);text-align:right;}
+.daynav{display:flex;align-items:center;background:var(--sur);border-bottom:1px solid var(--bor);flex-shrink:0;}
+.dnarr{width:48px;height:46px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;}
+.dnarr:active{color:var(--acc);}
+.dnctr{flex:1;text-align:center;padding:7px 0;}
+.dnday{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;line-height:1;}
+.dndate{font-size:10px;color:var(--txt2);letter-spacing:1px;margin-top:2px;}
+.todaybtn{font-size:10px;color:var(--acc);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:2px 6px;}
+.screen{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.screen.active{display:block;}
+.bnav{display:flex;background:var(--sur);border-top:1px solid var(--bor);padding-bottom:var(--sb);flex-shrink:0;}
+.nb{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--mut);font-family:'DM Sans',sans-serif;transition:color .15s;}
+.nb.active{color:var(--acc);}
+.nbi{font-size:18px;line-height:1;}
+.nbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;}
+.tag{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.tr{background:#0a1820;color:#4ab8d4;}
+.tg{background:#0d1f30;color:#6bb4e0;}
+.tx{background:#161616;color:var(--mut);}
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin:9px 12px 0;overflow:hidden;}
+.chead{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bor);}
+.cico{font-size:20px;flex-shrink:0;}
+.cinf{flex:1;}
+.ctit{font-size:15px;font-weight:500;}
+.csub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.cedit{font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 8px;}
+.cbody{padding:10px 16px;}
+.row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--bor);}
+.row:last-child{border-bottom:none;}
+.rdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+.rtxt{font-size:13px;flex:1;line-height:1.5;}
+.rtxt b{font-weight:500;}
+.rtim{font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);white-space:nowrap;margin-top:3px;}
+.crow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bor);cursor:pointer;}
+.crow:last-child{border-bottom:none;}
+.crow.dn{opacity:.5;}
+.crow.dn .cname{text-decoration:line-through;}
+.cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cinf2{flex:1;}
+.cname{font-size:13px;}
+.cdose{font-size:11px;color:var(--txt2);margin-top:1px;}
+.cbadge{font-size:10px;color:var(--mut);background:var(--sur2);padding:2px 7px;border-radius:10px;white-space:nowrap;}
+.cbox{width:20px;height:20px;border:1px solid var(--bor2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;flex-shrink:0;}
+.crow.dn .cbox{background:var(--grn);border-color:var(--grn);color:#fff;}
+.rstrip{margin:9px 12px 0;background:#0a1525;border:1px solid #1a3050;border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.rdays{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--acc);line-height:1;text-align:right;}
+.rdlbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);text-align:right;}
+.gelstrip{margin:9px 12px 0;background:var(--adim);border:1px solid #1a3a50;border-radius:10px;padding:12px 14px;}
+.geltit{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:8px;}
+.gelchips{display:flex;flex-wrap:wrap;gap:5px;}
+.gelchip{font-family:'DM Mono',monospace;font-size:10px;color:var(--acc);background:rgba(74,159,212,.1);padding:3px 8px;border-radius:20px;border:1px solid rgba(74,159,212,.2);}
+.notebox{margin:9px 12px 0;background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:14px 16px;}
+.notlbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.nottxt{font-size:13px;color:var(--txt2);line-height:1.6;min-height:32px;}
+.nottxt.emp{font-style:italic;color:var(--mut);}
+.notedit{font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;}
+.tagsrow{display:flex;gap:6px;flex-wrap:wrap;padding:9px 12px 0;}
+.tpad{padding:14px 12px 80px;}
+.wtabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none;}
+.wtabs::-webkit-scrollbar{display:none;}
+.wtab{flex-shrink:0;padding:6px 12px;border:1px solid var(--bor2);border-radius:20px;background:none;color:var(--txt2);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all .15s;}
+.wtab.active{background:var(--acc);color:#fff;border-color:var(--acc);}
+.drow{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:13px 16px;margin-bottom:7px;}
+.drow.td{border-color:#1a3a50;}
+.drhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.drday{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;}
+.drmet{font-size:10px;color:var(--mut);}
+.drdone{font-size:11px;cursor:pointer;}
+.drtags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.drdet{font-size:12px;color:var(--txt2);line-height:1.5;padding-top:7px;border-top:1px solid var(--bor);}
+.npad{padding:14px 12px 80px;}
+.mcard{background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin-bottom:9px;overflow:hidden;}
+.mhead{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--bor);}
+.mtim{font-family:'DM Mono',monospace;font-size:11px;color:var(--acc);}
+.mnam{font-size:14px;font-weight:500;}
+.mbody{padding:8px 16px;}
+.mitem{font-size:13px;color:var(--txt2);padding:6px 0;border-bottom:1px solid var(--bor);line-height:1.5;}
+.mitem:last-child{border-bottom:none;}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.bstat{background:var(--sur);border:1px solid var(--bor);border-radius:8px;padding:12px 6px;text-align:center;}
+.bsval{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;}
+.bslbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-top:3px;}
+.pcard{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:14px;margin-bottom:9px;}
+.plbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);margin-bottom:10px;}
+.prow{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.pinp{background:var(--sur2);border:1px solid var(--bor2);border-radius:6px;color:var(--txt);font-family:'DM Mono',monospace;font-size:18px;padding:8px 12px;width:110px;outline:none;text-align:center;transition:border-color .15s;}
+.pinp:focus{border-color:var(--acc);}
+.psegs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ps{background:var(--sur2);border-radius:8px;padding:10px 6px;text-align:center;}
+.pslbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-bottom:4px;}
+.psval{font-family:'DM Mono',monospace;font-size:13px;}
+.psval.g{color:var(--grn);}
+.psval.y{color:var(--yel);}
+.tllbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);padding:10px 12px 6px;}
+.tlitem{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin:0 12px 6px;cursor:pointer;}
+.tlitem.dn{opacity:.45;}
+.tlitem.dn .tltit{text-decoration:line-through;}
+.tltim{font-family:'DM Mono',monospace;font-size:11px;color:var(--acc);min-width:44px;margin-top:3px;}
+.tldot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.tlbod{flex:1;}
+.tltit{font-size:14px;font-weight:500;margin-bottom:2px;}
+.tldsc{font-size:12px;color:var(--txt2);line-height:1.5;}
+.tlchk{width:20px;height:20px;border:1px solid var(--bor2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;flex-shrink:0;margin-top:2px;}
+.tlitem.dn .tlchk{background:var(--acc);border-color:var(--acc);color:#fff;}
+.slbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);padding:14px 12px 8px;}
+.pb24{height:24px;}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;align-items:flex-end;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--sur);border:1px solid var(--bor2);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;}
+.mhdl{width:36px;height:4px;background:var(--bor2);border-radius:2px;margin:0 auto 18px;}
+.mtitle{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px;}
+.msub{font-size:12px;color:var(--txt2);margin-bottom:16px;}
+.mf{margin-bottom:14px;}
+.mf label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--txt2);margin-bottom:6px;}
+.mf input,.mf textarea{width:100%;background:var(--sur2);border:1px solid var(--bor2);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:15px;padding:11px 14px;outline:none;transition:border-color .15s;}
+.mf input:focus,.mf textarea:focus{border-color:var(--acc);}
+.mf textarea{resize:vertical;min-height:90px;font-size:14px;line-height:1.6;}
+.msave{width:100%;padding:14px;background:var(--acc);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:8px;cursor:pointer;margin-top:6px;}
+.mcancel{width:100%;padding:12px;background:none;color:var(--txt2);font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--bor2);border-radius:8px;cursor:pointer;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hdr">
+    <div><div class="aname">MARATHON HUB</div><div class="asub">Frederico · Copenhagen 2026</div></div>
+    <div><div class="cnum" id="cnum">—</div><div class="clbl">dias p/ prova</div></div>
+  </div>
+  <div class="daynav" id="daynav">
+    <button class="dnarr" onclick="chDay(-1)">‹</button>
+    <div class="dnctr"><div class="dnday" id="dnday">—</div><div class="dndate" id="dndate">—</div></div>
+    <button class="todaybtn" id="todaybtn" onclick="goToday()" style="display:none">Hoje</button>
+    <button class="dnarr" onclick="chDay(1)">›</button>
+  </div>
+  <div class="screen active" id="s-hoje"><div id="hcont" style="padding-bottom:24px;"></div></div>
+  <div class="screen" id="s-treino"><div class="tpad"><div class="wtabs" id="wtabs"></div><div id="tdays"></div></div></div>
+  <div class="screen" id="s-nutri"><div class="npad" id="ncont"></div></div>
+  <div class="screen" id="s-rd"><div style="padding-bottom:24px;" id="rdcont"></div></div>
+  <div class="bnav">
+    <button class="nb active" onclick="goScr('hoje',this)"><div class="nbi">📅</div><div class="nbl">Hoje</div></button>
+    <button class="nb" onclick="goScr('treino',this)"><div class="nbi">🏃</div><div class="nbl">Treino</div></button>
+    <button class="nb" onclick="goScr('nutri',this)"><div class="nbi">🥗</div><div class="nbl">Nutrição</div></button>
+    <button class="nb" onclick="goScr('rd',this)"><div class="nbi">🏁</div><div class="nbl">Race Day</div></button>
+  </div>
+</div>
+<div class="modal-ov" id="modal" onclick="if(event.target===this)closeM()">
+  <div class="modal">
+    <div class="mhdl"></div>
+    <div class="mtitle" id="mtitle"></div>
+    <div class="msub" id="mmsub"></div>
+    <div id="mbody"></div>
+    <button class="msave" onclick="mSave()">SALVAR</button>
+    <button class="mcancel" onclick="closeM()">Cancelar</button>
+  </div>
+</div>
+<script>
+const RACE=new Date('2026-05-10T08:30:00');
+const TSTART=new Date('2026-03-31');
+const WSCHED=[
+  {day:'Segunda',run:{type:'Fartlek',desc:'Saídas em ritmo variado. Aquece 10min, estímulos, esfria 10min.',pace:'Variado'},gym:['Sup A','Core']},
+  {day:'Terça',run:null,gym:['Sup B','Perna']},
+  {day:'Quarta',run:{type:'Tiros / Fartlek',desc:'Tiros curtos em ritmo forte conforme orientação do treinador.',pace:'5:00–5:30/km'},gym:['Sup A','Core']},
+  {day:'Quinta',run:null,gym:['Sup B']},
+  {day:'Sexta',run:{type:'Treino Longo',desc:'Treino mais importante da semana. Pace controlado, gel no meio, hidratação constante.',pace:'6:00–6:30/km'},gym:[]},
+  {day:'Sábado',run:null,gym:['Perna','Core']},
+  {day:'Domingo',run:{type:'Regenerativo',desc:'Corrida leve para recuperação ativa. Pace conversacional, sem forçar.',pace:'6:30–7:00/km'},gym:[]},
+];
+const EXMAP={
+  'Sup A':['Supino Halteres Unilateral 4×8','Peitoral Fly 3×12','Desenvolvimento Halteres 3×10','Deltoide Posterior Máq. 3×10','Tríceps Cabo Overhead 3×10','Tríceps Testa 3×10'],
+  'Sup B':['Remada Baixa Cabo 4×8','Remada Unilateral 3×10','Puxada Polia Supinada 3×8','Rosca Direta Barra 3×8','Rosca Unilateral 3×8'],
+  'Perna':['Agachamento c/ Elástico 3×15','Abdução Cabo 3×15','Glute Bridge Unilateral 3×12','Step Up Banco 3×10','Panturrilha 3×20','Wall Sit 3×40s'],
+  'Core':['Dead Bug 3×8/lado','Pallof Press 3×10/lado','Leg Raise 3×15','Bird-Dog 3×10/lado','Ab Wheel 3×8','Hollow Body 3×20s'],
+};
+const DEFMEALS=[
+  {time:'Pré-treino',name:'Antes de Treinar',icon:'🍊',items:['1 fruta (banana ou laranja) — nunca treinar em jejum']},
+  {time:'07:35',name:'Café da Manhã',icon:'☕',items:['2 fatias pão integral + 2 fatias queijo minas','100ml suco uva integral diluído em água','½ dose Multivitamínico + 1 Ômega-3 1g','OU: 4 col. granola light + 200ml iogurte semi-desnatado']},
+  {time:'12:15',name:'Almoço',icon:'🍽️',items:['Salada à vontade + verdura refogada + 1 col. azeite','2 col. arroz branco + 1 concha feijão','1 bife pequeno grelhado (Filé/Alcatra/Patinho)','200ml suco natural laranja ou limão']},
+  {time:'15:30',name:'Lanche',icon:'🍫',items:['1 iogurte proteico desnatado','OU: 1 snack integral Mãe Terra (45g)','OU: 1 barra proteína DUX / Bio2 / Bold']},
+  {time:'21:00',name:'Jantar',icon:'🌙',items:['Salada à vontade + verdura refogada + 1 col. azeite','2 pegadores macarrão c/ molho tomate OU 2 fatias pão integral','1 filé frango grelhado OU queijo branco + 2 fatias peito peru','1 fatia grossa melancia','½ dose Multivitamínico + 1 Ômega-3 1g']},
+];
+const DEFSUPPL=[
+  {name:'Multivitamínico',dose:'½ dose',time:'Café da manhã',color:'#a78bfa'},
+  {name:'Ômega-3',dose:'1g',time:'Café da manhã',color:'#4a9fd4'},
+  {name:'Multivitamínico',dose:'½ dose',time:'Jantar',color:'#a78bfa'},
+  {name:'Ômega-3',dose:'1g',time:'Jantar',color:'#4a9fd4'},
+  {name:'Whey DUX + mel',dose:'1 dose',time:'Pós-musculação',color:'#3fb950'},
+];
+const TLD=[
+  {sec:'Manhã cedo',items:[{t:'05:30',title:'Acordar',desc:'500ml água imediatamente.',c:'#4a9fd4'},{t:'05:45',title:'Café da manhã',desc:'Pão + banana. Nada novo. Café se habitual.',c:'#e6a817'},{t:'06:30',title:'Saída para o largue',desc:'Chegar 60–90 min antes.',c:'#4a9fd4'}]},
+  {sec:'Pré-largada',items:[{t:'07:30',title:'Aquecimento leve',desc:'10 min caminhada + mobilidade.',c:'#3fb950'},{t:'07:45',title:'Gel de ativação',desc:'1 gel + água 15 min antes.',c:'#e6a817'},{t:'08:30',title:'🏁 LARGADA',desc:'Primeiros 5km abaixo do pace. Não vai na euforia.',c:'#a78bfa'}]},
+  {sec:'Durante a prova',items:[{t:'a cada posto',title:'Hidratação',desc:'Água a cada posto. Isotônico nos km finais.',c:'#4a9fd4'},{t:'conforme plano',title:'Géis',desc:'Conforme calculadora abaixo. Não pula.',c:'#e6a817'},{t:'km 30',title:'Check mental',desc:'Avalia pace. O muro começa aqui — mantém.',c:'#3fb950'}]},
+  {sec:'Pós-prova',items:[{t:'finish',title:'Recuperação imediata',desc:'Bananinha Paraibuna ou 5 sachês mel — imediatamente.',c:'#3fb950'},{t:'+1h',title:'Refeição + celebração 🍺',desc:'Carb + proteína. Você fez Copenhagen.',c:'#a78bfa'}]},
+];
+const WMETA=[{l:'S1',p:'Consolidação'},{l:'S2',p:'Consolidação'},{l:'S3',p:'Consolidação'},{l:'S4',p:'Manutenção'},{l:'S5',p:'Taper'},{l:'S6',p:'Taper'}];
+
+let S={};try{S=JSON.parse(localStorage.getItem('mhf3')||'{}');}catch(e){}
+if(!S.sc)S.sc={};if(!S.tc)S.tc={};if(!S.tl)S.tl={};if(!S.tp)S.tp='4:30:00';if(!S.no)S.no={};
+if(!S.ml)S.ml=JSON.parse(JSON.stringify(DEFMEALS));if(!S.su)S.su=JSON.parse(JSON.stringify(DEFSUPPL));
+function sv(){try{localStorage.setItem('mhf3',JSON.stringify(S));}catch(e){}}
+
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+let vd=new Date(TODAY);
+function dk(d){return d.toISOString().slice(0,10);}
+function dow(d){return(d.getDay()+6)%7;}
+function dul(){return Math.ceil((RACE-new Date())/86400000);}
+
+function chDay(n){vd.setDate(vd.getDate()+n);rNav();rHoje();}
+function goToday(){vd=new Date(TODAY);rNav();rHoje();}
+
+function rNav(){
+  const isTd=dk(vd)===dk(TODAY);
+  const dnames=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+  document.getElementById('dnday').textContent=(isTd?'HOJE — ':'')+dnames[dow(vd)].toUpperCase();
+  document.getElementById('dndate').textContent=vd.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('todaybtn').style.display=isTd?'none':'block';
+}
+
+function calcSegs(t){
+  const p=t.split(':').map(Number);const s=(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);const a=s/42.195;
+  const f=x=>`${Math.floor(x/60)}:${String(Math.round(x%60)).padStart(2,'0')}/km`;
+  return{e:f(a*1.04),m:f(a),l:f(a*0.97)};
+}
+function calcGels(t,freq=35){
+  const p=t.split(':').map(Number);const tm=(p[0]||0)*60+(p[1]||0)+(p[2]||0)/60;const ap=tm/42.195;
+  const g=[];let x=freq;while(x<tm-10){g.push({min:Math.round(x),km:Math.round(x/ap*10)/10});x+=freq;}return g;
+}
+
+function rHoje(){
+  const dkey=dk(vd);const di=dow(vd);const day=WSCHED[di];
+  const isLong=day.run?.type==='Treino Longo';const hasGym=day.gym.length>0;const hasRun=!!day.run;
+  document.getElementById('cnum').textContent=dul()>0?dul():'🏁';
+  const tags=[hasRun?`<span class="tag tr">${day.run.type}</span>`:'',
+    ...day.gym.map(g=>`<span class="tag tg">${g}</span>`),
+    (!hasRun&&!hasGym)?'<span class="tag tx">Descanso ativo</span>':''].filter(Boolean).join('');
+  const todaySu=hasGym?S.su:S.su.filter(s=>s.time!=='Pós-musculação');
+  const note=S.no[dkey]||'';
+  let h='';
+  h+=`<div class="rstrip"><div><div style="font-size:13px;font-weight:500;">🏁 Copenhagen Marathon</div><div style="font-size:10px;color:var(--txt2);margin-top:2px;">10 Mai 2026 · 08:30 · Alvo ${S.tp}</div></div><div><div class="rdays">${dul()>0?dul():'🏁'}</div><div class="rdlbl">dias</div></div></div>`;
+  h+=`<div class="tagsrow">${tags}</div>`;
+  if(hasRun){
+    h+=`<div class="card"><div class="chead"><div class="cico">🏃</div><div class="cinf"><div class="ctit">${day.run.type}</div><div class="csub">Manhã · Pace: ${day.run.pace}</div></div></div><div class="cbody">
+    <div class="row"><div class="rdot" style="background:#4ab8d4"></div><div class="rtxt">${day.run.desc}</div></div>
+    ${isLong?'<div class="row"><div class="rdot" style="background:#e6a817"></div><div class="rtxt"><b>Gel no meio</b> da corrida + água a cada posto</div></div>':''}
+    <div class="row"><div class="rdot" style="background:#3fb950"></div><div class="rtxt"><b>Pós-corrida:</b> ${isLong?'Bananinha Paraibuna imediatamente ao terminar':'Bananinha Paraibuna OU 5 sachês mel'}</div></div>
+    </div></div>`;
+  }
+  if(isLong){const g=calcGels(S.tp);h+=`<div class="gelstrip"><div class="geltit">Plano de Gel · ${S.tp} · a cada 35 min</div><div class="gelchips">${g.map((x,i)=>`<div class="gelchip">Gel ${i+1} · km ${x.km}</div>`).join('')}</div></div>`;}
+  if(hasGym){
+    const rows=day.gym.map(g=>`<div style="margin-bottom:6px;"><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:4px;padding-top:4px;">${g}</div>${(EXMAP[g]||[]).map(e=>`<div class="row"><div class="rdot" style="background:#6bb4e0"></div><div class="rtxt">${e}</div></div>`).join('')}</div>`).join('');
+    h+=`<div class="card"><div class="chead"><div class="cico">🏋️</div><div class="cinf"><div class="ctit">${day.gym.join(' + ')}</div><div class="csub">${hasRun?'Tarde · mín 4h após corrida':'Qualquer horário'}</div></div></div><div class="cbody">${rows}<div class="row" style="margin-top:4px;"><div class="rdot" style="background:#3fb950"></div><div class="rtxt"><b>Pós-musculação:</b> Whey DUX Chocolate Avelã + mel</div></div></div></div>`;
+  }
+  h+=`<div class="card"><div class="chead"><div class="cico">🥗</div><div class="cinf"><div class="ctit">Nutrição</div><div class="csub">${isLong?'Dia longo — reforça carboidrato':hasRun&&hasGym?'Treino duplo':hasRun||hasGym?'Dia de treino':'Dia de descanso'}</div></div><button class="cedit" onclick="openMM()">✎ Editar</button></div><div class="cbody">
+  ${hasRun?'<div class="row"><div class="rdot" style="background:#e6a817"></div><div class="rtxt"><b>Pré-treino:</b> 1 fruta antes de sair</div></div>':''}
+  <div class="row"><div class="rdot" style="background:#4a9fd4"></div><div class="rtxt"><b>07:35</b> Pão integral + queijo minas + suco uva</div></div>
+  <div class="row"><div class="rdot" style="background:#4a9fd4"></div><div class="rtxt"><b>12:15</b> Salada + arroz + feijão + bife grelhado</div></div>
+  <div class="row"><div class="rdot" style="background:#4a9fd4"></div><div class="rtxt"><b>15:30</b> Iogurte proteico OU barra proteína</div></div>
+  <div class="row"><div class="rdot" style="background:#4a9fd4"></div><div class="rtxt"><b>21:00</b> Salada + macarrão OU pão + frango</div></div>
+  </div></div>`;
+  h+=`<div class="card"><div class="chead"><div class="cico">💊</div><div class="cinf"><div class="ctit">Suplementação</div><div class="csub">${todaySu.length} itens hoje</div></div></div><div class="cbody">${todaySu.map((s,i)=>{const k=`${dkey}_s${i}`;const dn=!!S.sc[k];return`<div class="crow${dn?' dn':''}" onclick="togS('${k}')"><div class="cdot" style="background:${s.color}"></div><div class="cinf2"><div class="cname">${s.name}</div><div class="cdose">${s.dose}</div></div><div class="cbadge">${s.time}</div><div class="cbox">${dn?'✓':''}</div></div>`;}).join('')}</div></div>`;
+  h+=`<div class="notebox"><div class="notlbl"><span>Anotações do dia</span><button class="notedit" onclick="openNM('${dkey}')">✎ Editar</button></div><div class="nottxt${note?'':' emp'}">${note||'Nenhuma anotação. Como foi hoje?'}</div></div>`;
+  h+='<div class="pb24"></div>';
+  document.getElementById('hcont').innerHTML=h;
+}
+function togS(k){S.sc[k]=!S.sc[k];sv();rHoje();}
+
+let cw=Math.min(Math.max(Math.floor((TODAY-TSTART)/604800000),0),5);
+function rTreino(){
+  document.getElementById('wtabs').innerHTML=WMETA.map((w,i)=>`<button class="wtab${cw===i?' active':''}" onclick="sw(${i})">${w.l} <span style="font-size:9px;opacity:.65;">${w.p}</span></button>`).join('');
+  const ws=new Date(TSTART);ws.setDate(TSTART.getDate()+cw*7);
+  document.getElementById('tdays').innerHTML=WSCHED.map((day,di)=>{
+    const dt=new Date(ws);dt.setDate(ws.getDate()+di);const dkey=dk(dt);
+    const isTd=dkey===dk(TODAY);const done=!!S.tc[dkey];
+    const isRest=!day.run&&!day.gym.length;
+    const tags=[day.run?`<span class="tag tr">${day.run.type}</span>`:'',
+      ...day.gym.map(g=>`<span class="tag tg">${g}</span>`),
+      isRest?'<span class="tag tx">Descanso</span>':''].filter(Boolean).join('');
+    return`<div class="drow${isTd?' td':''}"><div class="drhead"><div><div class="drday">${day.day}${isTd?' <span style="font-size:10px;color:var(--acc);font-family:\'DM Sans\',sans-serif;">· hoje</span>':''}</div><div class="drmet">${dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div></div><div class="drdone" style="color:${done?'var(--grn)':'var(--mut)'}" onclick="togT('${dkey}')">${done?'✓ Feito':'marcar'}</div></div><div class="drtags">${tags}</div>${day.run?`<div class="drdet">${day.run.desc} · <b>Pace:</b> ${day.run.pace}</div>`:''}</div>`;
+  }).join('');
+}
+function sw(i){cw=i;rTreino();}
+function togT(k){S.tc[k]=!S.tc[k];sv();rTreino();}
+
+function rNutri(){
+  const g=calcGels(S.tp);
+  document.getElementById('ncont').innerHTML=`
+  <div class="slbl">Composição Corporal · Fev 2026</div>
+  <div class="bgrid">
+    <div class="bstat"><div class="bsval" style="color:#4a9fd4">76.7</div><div class="bslbl">kg</div></div>
+    <div class="bstat"><div class="bsval" style="color:#3fb950">12.9%</div><div class="bslbl">gordura</div></div>
+    <div class="bstat"><div class="bsval" style="color:#e6a817">28.5kg</div><div class="bslbl">músculo</div></div>
+    <div class="bstat"><div class="bsval">22.2</div><div class="bslbl">IMC</div></div>
+    <div class="bstat"><div class="bsval">186cm</div><div class="bslbl">altura</div></div>
+    <div class="bstat"><div class="bsval" style="color:#a78bfa">39</div><div class="bslbl">anos</div></div>
+  </div>
+  <div class="slbl">Refeições <button style="font-size:11px;color:var(--acc);background:none;border:none;cursor:pointer;" onclick="openMM()">✎ Editar</button></div>
+  ${S.ml.map((m,mi)=>`<div class="mcard"><div class="mhead"><div><div class="mtim">${m.time}</div><div class="mnam">${m.icon} ${m.name}</div></div><button class="cedit" onclick="openSM(${mi})">✎</button></div><div class="mbody">${m.items.map(it=>`<div class="mitem">${it}</div>`).join('')}</div></div>`).join('')}
+  <div class="slbl">Suplementação</div>
+  ${S.su.map(s=>`<div class="mcard"><div class="mbody" style="padding:10px 16px;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0;"></div><div style="flex:1;font-size:13px;"><b>${s.name}</b> · ${s.dose}</div><div style="font-size:10px;color:var(--mut);background:var(--sur2);padding:2px 8px;border-radius:10px;">${s.time}</div></div></div></div>`).join('')}
+  <div class="slbl">Calculadora de Gel</div>
+  <div class="pcard"><div class="plbl">Tempo alvo</div><div class="prow"><input class="pinp" id="pninp" type="text" value="${S.tp}" oninput="upP(this.value)"><span style="font-size:12px;color:var(--txt2);">· a cada 35 min</span></div><div class="gelchips" style="margin-top:4px;">${g.map((x,i)=>`<div class="gelchip">Gel ${i+1} · km ${x.km}</div>`).join('')}</div></div>
+  <div class="pb24"></div>`;
+}
+
+function rRD(){
+  const segs=calcSegs(S.tp);const g=calcGels(S.tp);
+  document.getElementById('rdcont').innerHTML=`
+  <div style="background:linear-gradient(135deg,#15082a,#0a0a1a);border:1px solid #2a1a3a;border-radius:12px;margin:12px;padding:20px;text-align:center;">
+    <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--pur);margin-bottom:8px;">Race Day Planner</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:4px;">COPENHAGEN MARATHON</div>
+    <div style="font-size:13px;color:var(--txt2);">10 de maio de 2026 · 08:30</div>
+  </div>
+  <div style="margin:0 12px 10px;">
+    <div class="pcard"><div class="plbl">Estratégia de Pace</div><div class="prow"><input class="pinp" id="prd" type="text" value="${S.tp}" oninput="upP(this.value)"><span style="font-size:12px;color:var(--txt2);">tempo alvo</span></div>
+    <div class="psegs"><div class="ps"><div class="pslbl">0–10km</div><div class="psval g" id="pse">${segs.e}</div></div><div class="ps"><div class="pslbl">10–30km</div><div class="psval" id="psm">${segs.m}</div></div><div class="ps"><div class="pslbl">30–42km</div><div class="psval y" id="psl">${segs.l}</div></div></div></div>
+  </div>
+  <div style="margin:0 12px 10px;background:var(--adim);border:1px solid #1a3a50;border-radius:10px;padding:14px;">
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:8px;">${g.length} géis · a cada 35 min</div>
+    <div class="gelchips">${g.map((x,i)=>`<div class="gelchip">Gel ${i+1} · km ${x.km} · min ${x.min}</div>`).join('')}</div>
+  </div>
+  ${TLD.map((sec,si)=>`<div class="tllbl">${sec.sec}</div>${sec.items.map((it,ii)=>{const k=`tl_${si}_${ii}`;const dn=!!S.tl[k];return`<div class="tlitem${dn?' dn':''}" onclick="togTL('${k}')"><div class="tltim">${it.t}</div><div class="tldot" style="background:${it.c}"></div><div class="tlbod"><div class="tltit">${it.title}</div><div class="tldsc">${it.desc}</div></div><div class="tlchk">${dn?'✓':''}</div></div>`;}).join('')}`).join('')}
+  <div class="pb24"></div>`;
+}
+function togTL(k){S.tl[k]=!S.tl[k];sv();const el=document.querySelector(`[onclick="togTL('${k}')"]`);if(el){el.classList.toggle('dn',S.tl[k]);const c=el.querySelector('.tlchk');if(c)c.textContent=S.tl[k]?'✓':'';};}
+function upP(v){S.tp=v;sv();const s=calcSegs(v);const e=document.getElementById('pse'),m=document.getElementById('psm'),l=document.getElementById('psl');if(e)e.textContent=s.e;if(m)m.textContent=s.m;if(l)l.textContent=s.l;['pninp','prd'].forEach(id=>{const el=document.getElementById(id);if(el&&el!==event?.target)el.value=v;});}
+
+let mm=null;
+function openM(){document.getElementById('modal').classList.add('open');}
+function closeM(){document.getElementById('modal').classList.remove('open');}
+function openNM(dkey){mm={t:'note',dkey};document.getElementById('mtitle').textContent='Anotações';document.getElementById('mmsub').textContent=vd.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});document.getElementById('mbody').innerHTML=`<div class="mf"><label>Como foi? Sensações, pace, ajustes...</label><textarea id="ninp" placeholder="Ex: Longo bem. Pace 6:15. Gel km 18. Perna direita pesou um pouco.">${S.no[dkey]||''}</textarea></div>`;openM();}
+function openMM(){mm={t:'meals'};document.getElementById('mtitle').textContent='Plano Alimentar';document.getElementById('mmsub').textContent='Edite suas refeições base';document.getElementById('mbody').innerHTML=S.ml.map((m,i)=>`<div class="mf"><label>${m.icon} ${m.name} · ${m.time}</label><textarea id="ml${i}" rows="3">${m.items.join('\n')}</textarea></div>`).join('');openM();}
+function openSM(mi){const m=S.ml[mi];mm={t:'sm',mi};document.getElementById('mtitle').textContent=m.name;document.getElementById('mmsub').textContent=m.time;document.getElementById('mbody').innerHTML=`<div class="mf"><label>Itens (um por linha)</label><textarea id="sminp" rows="5">${m.items.join('\n')}</textarea></div>`;openM();}
+function mSave(){if(!mm)return;if(mm.t==='note'){S.no[mm.dkey]=document.getElementById('ninp').value.trim();sv();closeM();rHoje();}else if(mm.t==='meals'){S.ml.forEach((m,i)=>{const el=document.getElementById(`ml${i}`);if(el)m.items=el.value.split('\n').filter(l=>l.trim());});sv();closeM();rNutri();rHoje();}else if(mm.t==='sm'){const el=document.getElementById('sminp');if(el)S.ml[mm.mi].items=el.value.split('\n').filter(l=>l.trim());sv();closeM();rNutri();rHoje();}}
+
+function goScr(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');btn.classList.add('active');
+  document.getElementById('daynav').style.display=name==='hoje'?'flex':'none';
+  if(name==='treino')rTreino();if(name==='nutri')rNutri();if(name==='rd')rRD();
+}
+
+rNav();rHoje();rTreino();
+</script>
+</body>
+</html>
