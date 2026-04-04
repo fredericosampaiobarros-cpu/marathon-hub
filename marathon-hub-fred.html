@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Marathon Hub">
+<title>Marathon Hub · Fred</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c12;--sur:#0e1420;--sur2:#131c2a;--bor:#1e2840;--bor2:#253050;
+  --acc:#4a9fd4;--acc-dim:#0a1825;
+  --grn:#3fb950;--grn-dim:#0a1f10;
+  --yel:#e6a817;--yel-dim:#1f1608;
+  --red:#f85149;--pur:#a78bfa;
+  --mut:#4a5568;--txt:#e2e8f4;--txt2:#7a8ba8;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-weight:300;height:100%;overflow:hidden;}
+
+/* SHELL */
+.shell{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;}
+
+/* HEADER */
+.hdr{padding:calc(var(--safe-top) + 10px) 20px 10px;background:var(--bg);border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hdr-left .app-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:var(--acc);}
+.hdr-left .app-sub{font-size:10px;color:var(--mut);letter-spacing:1px;margin-top:1px;}
+.hdr-right{text-align:right;}
+.cd-num{font-family:'DM Mono',monospace;font-size:26px;color:var(--txt);line-height:1;}
+.cd-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);}
+
+/* SCREENS */
+.screen{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.screen.active{display:block;}
+
+/* BOTTOM NAV */
+.bnav{display:flex;background:var(--sur);border-top:1px solid var(--bor);padding-bottom:var(--safe-bot);flex-shrink:0;}
+.nb{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--mut);font-family:'DM Sans',sans-serif;transition:color .15s;}
+.nb.active{color:var(--acc);}
+.nb-icon{font-size:18px;line-height:1;}
+.nb-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;}
+
+/* ── TODAY ── */
+.today-pad{padding:0 0 24px;}
+
+.today-banner{background:linear-gradient(160deg,#0c1a2e 0%,var(--bg) 70%);padding:18px 20px 16px;border-bottom:1px solid var(--bor);}
+.tb-date{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);margin-bottom:4px;}
+.tb-day{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;letter-spacing:2px;margin-bottom:10px;}
+.tb-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;letter-spacing:.3px;}
+.t-run{background:#0a1820;color:#4ab8d4;}
+.t-gym{background:#0d1f30;color:#6bb4e0;}
+.t-rest{background:#161616;color:var(--mut);}
+.t-race{background:#15082a;color:var(--pur);}
+
+/* RACE COUNTDOWN STRIP */
+.race-strip{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#0a1525;border-bottom:1px solid #1a3050;}
+.rs-left{display:flex;align-items:center;gap:10px;}
+.rs-icon{font-size:20px;}
+.rs-title{font-size:13px;font-weight:500;}
+.rs-sub{font-size:10px;color:var(--txt2);margin-top:1px;}
+.rs-days{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--acc);line-height:1;}
+.rs-days-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);text-align:right;}
+
+/* SECTION */
+.sec{padding:16px 20px 0;}
+.sec-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);margin-bottom:10px;}
+
+/* TODAY BLOCKS */
+.today-block{background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin:0 12px 10px;overflow:hidden;}
+.tb-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--bor);}
+.tb-icon{font-size:22px;flex-shrink:0;}
+.tb-info{flex:1;}
+.tb-block-title{font-size:15px;font-weight:500;}
+.tb-block-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.tb-badge{font-family:'DM Mono',monospace;font-size:10px;color:var(--acc);background:var(--acc-dim);padding:3px 8px;border-radius:4px;white-space:nowrap;}
+.tb-body{padding:12px 16px;}
+.tb-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--bor);}
+.tb-row:last-child{border-bottom:none;}
+.tb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+.tb-row-text{font-size:13px;color:var(--txt);flex:1;line-height:1.5;}
+.tb-row-text span{color:var(--txt2);}
+.tb-row-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);white-space:nowrap;margin-top:2px;}
+
+/* SUPPL CHECK */
+.suppl-check-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bor);cursor:pointer;}
+.suppl-check-row:last-child{border-bottom:none;}
+.suppl-check-row.done .sc-name{text-decoration:line-through;color:var(--mut);}
+.sc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sc-info{flex:1;}
+.sc-name{font-size:13px;}
+.sc-dose{font-size:11px;color:var(--txt2);margin-top:1px;}
+.sc-time{font-size:10px;color:var(--mut);background:var(--sur2);padding:2px 7px;border-radius:10px;white-space:nowrap;}
+.sc-box{width:20px;height:20px;border:1px solid var(--bor2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;flex-shrink:0;}
+.suppl-check-row.done .sc-box{background:var(--grn);border-color:var(--grn);color:#fff;}
+
+/* GEL STRIP */
+.gel-strip{background:var(--acc-dim);border:1px solid #1a3a50;border-radius:8px;padding:12px 14px;margin:10px 12px 0;}
+.gel-strip-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:8px;}
+.gel-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.gel-chip{font-family:'DM Mono',monospace;font-size:10px;color:var(--acc);background:rgba(74,159,212,.1);padding:3px 8px;border-radius:20px;border:1px solid rgba(74,159,212,.2);}
+
+/* ── TRAINING ── */
+.train-pad{padding:16px 12px 24px;}
+.wtabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none;padding:0 0 2px;}
+.wtabs::-webkit-scrollbar{display:none;}
+.wtab{flex-shrink:0;padding:6px 13px;border:1px solid var(--bor2);border-radius:20px;background:none;color:var(--txt2);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.wtab.active{background:var(--acc);color:#fff;border-color:var(--acc);}
+
+.day-card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:14px 16px;margin-bottom:8px;transition:border-color .15s;}
+.day-card.today-highlight{border-color:#1a3a50;}
+.dc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.dc-day{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;}
+.dc-date{font-size:11px;color:var(--mut);}
+.dc-done{font-size:11px;color:var(--grn);cursor:pointer;}
+.dc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.dc-run-detail{font-size:12px;color:var(--txt2);line-height:1.5;padding-top:8px;border-top:1px solid var(--bor);}
+.dc-run-detail b{color:var(--txt);}
+.rest-card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:14px 16px;margin-bottom:8px;opacity:.45;}
+
+/* ── NUTRITION ── */
+.nutr-pad{padding:16px 12px 24px;}
+.meal-card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.meal-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bor);}
+.meal-time{font-family:'DM Mono',monospace;font-size:13px;color:var(--acc);}
+.meal-name{font-size:14px;font-weight:500;}
+.meal-body{padding:10px 16px;}
+.meal-item{font-size:13px;color:var(--txt2);padding:5px 0;border-bottom:1px solid var(--bor);line-height:1.5;}
+.meal-item:last-child{border-bottom:none;}
+.meal-item b{color:var(--txt);}
+.meal-item .alt{color:var(--mut);font-size:11px;}
+
+.pre-card{background:#0d1f10;border:1px solid #1a3a1a;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.pre-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--grn);margin-bottom:10px;}
+.pre-row{font-size:13px;color:#a0c8a0;padding:5px 0;border-bottom:1px solid #1a3a1a;line-height:1.5;}
+.pre-row:last-child{border-bottom:none;}
+.pre-row b{color:#d0f0d0;}
+
+.body-card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:16px;margin-bottom:10px;}
+.body-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.bstat{background:var(--sur2);border-radius:8px;padding:10px 6px;text-align:center;}
+.bstat-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;}
+.bstat-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-top:3px;}
+
+/* ── RACE DAY ── */
+.rd-pad{padding:16px 12px 24px;}
+.rd-hero{background:linear-gradient(135deg,#15082a 0%,#0a0a1a 100%);border:1px solid #2a1a3a;border-radius:12px;padding:20px;margin-bottom:12px;text-align:center;}
+.rd-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--pur);margin-bottom:8px;}
+.rd-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;margin-bottom:4px;}
+.rd-sub{font-size:13px;color:var(--txt2);}
+.pace-card{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:16px;margin-bottom:10px;}
+.pace-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);margin-bottom:10px;}
+.pace-target{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.pace-input{background:var(--sur2);border:1px solid var(--bor2);border-radius:6px;color:var(--txt);font-family:'DM Mono',monospace;font-size:18px;padding:8px 12px;width:110px;outline:none;text-align:center;transition:border-color .15s;}
+.pace-input:focus{border-color:var(--acc);}
+.pace-segs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ps{background:var(--sur2);border-radius:8px;padding:10px 6px;text-align:center;}
+.ps-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-bottom:4px;}
+.ps-val{font-family:'DM Mono',monospace;font-size:13px;}
+.ps-val.g{color:var(--grn);}
+.ps-val.y{color:var(--yel);}
+
+.tl-sec-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);padding:10px 4px 6px;}
+.tl-item{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;background:var(--sur);border:1px solid var(--bor);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:opacity .15s;}
+.tl-item.done{opacity:.45;}
+.tl-item.done .tl-title{text-decoration:line-through;}
+.tl-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--acc);min-width:44px;margin-top:3px;}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.tl-body{flex:1;}
+.tl-title{font-size:14px;font-weight:500;margin-bottom:2px;}
+.tl-desc{font-size:12px;color:var(--txt2);line-height:1.5;}
+.tl-chk{width:20px;height:20px;border:1px solid var(--bor2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;flex-shrink:0;margin-top:2px;}
+.tl-item.done .tl-chk{background:var(--acc);border-color:var(--acc);color:#fff;}
+
+.gel-plan-card{background:var(--acc-dim);border:1px solid #1a3a50;border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.gpc-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:10px;}
+.gpc-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.gpc-chip{font-family:'DM Mono',monospace;font-size:11px;color:var(--acc);background:rgba(74,159,212,.1);padding:4px 10px;border-radius:20px;border:1px solid rgba(74,159,212,.2);}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="app-name">MARATHON HUB</div>
+      <div class="app-sub">Frederico Barros · Copenhagen 2026</div>
+    </div>
+    <div class="hdr-right">
+      <div class="cd-num" id="cd-num">—</div>
+      <div class="cd-lbl">dias</div>
+    </div>
+  </div>
+
+  <!-- TODAY -->
+  <div class="screen active" id="s-hoje">
+    <div class="today-pad">
+
+      <div class="today-banner" id="today-banner"></div>
+
+      <div class="race-strip">
+        <div class="rs-left">
+          <div class="rs-icon">🏁</div>
+          <div>
+            <div class="rs-title">Copenhagen Marathon</div>
+            <div class="rs-sub">10 de maio de 2026 · 08:30</div>
+          </div>
+        </div>
+        <div>
+          <div class="rs-days" id="race-days">—</div>
+          <div class="rs-days-lbl">dias</div>
+        </div>
+      </div>
+
+      <!-- CORRIDA -->
+      <div id="run-block"></div>
+
+      <!-- MUSCULAÇÃO -->
+      <div id="gym-block"></div>
+
+      <!-- NUTRIÇÃO DO DIA -->
+      <div id="nutrition-block"></div>
+
+      <!-- SUPLEMENTOS -->
+      <div id="suppl-block"></div>
+
+      <!-- GEL (só se for treino longo) -->
+      <div id="gel-block"></div>
+
+    </div>
+  </div>
+
+  <!-- TRAINING -->
+  <div class="screen" id="s-treino">
+    <div class="train-pad">
+      <div class="wtabs" id="wtabs"></div>
+      <div id="train-days"></div>
+    </div>
+  </div>
+
+  <!-- NUTRITION -->
+  <div class="screen" id="s-nutri">
+    <div class="nutr-pad" id="nutr-content"></div>
+  </div>
+
+  <!-- RACE DAY -->
+  <div class="screen" id="s-raceday">
+    <div class="rd-pad" id="rd-content"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <button class="nb active" onclick="go('hoje',this)"><div class="nb-icon">📅</div><div class="nb-lbl">Hoje</div></button>
+    <button class="nb" onclick="go('treino',this)"><div class="nb-icon">🏃</div><div class="nb-lbl">Treino</div></button>
+    <button class="nb" onclick="go('nutri',this)"><div class="nb-icon">🥗</div><div class="nb-lbl">Nutrição</div></button>
+    <button class="nb" onclick="go('raceday',this)"><div class="nb-icon">🏁</div><div class="nb-lbl">Race Day</div></button>
+  </div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────
+
+const RACE = new Date('2026-05-10T08:30:00');
+const TRAIN_START = new Date('2026-03-31');
+
+// Weekly schedule — indexed 0=Mon...6=Sun
+const WEEK_SCHED = [
+  { day:'Segunda', run:{ type:'Fartlek', desc:'Saídas em ritmo variado. Aquece 10 min, faz os estímulos, esfria 10 min.', pace:'Variado' }, gym:['Sup A','Core'] },
+  { day:'Terça',   run:null, gym:['Sup B','Perna'] },
+  { day:'Quarta',  run:{ type:'Tiros / Fartlek', desc:'Tiros curtos em ritmo forte OU fartlek conforme orientação do treinador.', pace:'5:00–5:30/km' }, gym:['Sup A','Core'] },
+  { day:'Quinta',  run:null, gym:['Sup B'] },
+  { day:'Sexta',   run:{ type:'Treino Longo', desc:'Treino mais importante da semana. Pace controlado, hidratação a cada posto. Gel no km do meio.', pace:'6:00–6:30/km' }, gym:[] },
+  { day:'Sábado',  run:null, gym:['Perna','Core'] },
+  { day:'Domingo', run:{ type:'Regenerativo', desc:'Corrida leve para recuperação ativa. Pace conversacional.', pace:'6:30–7:00/km' }, gym:[] },
+];
+
+// Nutrition by meal
+const MEALS = [
+  {
+    time:'Pré-treino', name:'Antes de Treinar', icon:'🍊',
+    items:['1 fruta (banana ou laranja) — fácil digestão, não treina em jejum']
+  },
+  {
+    time:'07:35', name:'Café da Manhã', icon:'☕',
+    items:[
+      '2 fatias de pão integral + 2 fatias de queijo minas',
+      '100ml suco de uva integral diluído em água',
+      '<span class="alt">OU: 4 col. granola light + 200ml iogurte semi-desnatado</span>',
+      '½ dose Multivitamínico + 1 Ômega-3 (1g)'
+    ]
+  },
+  {
+    time:'12:15', name:'Almoço', icon:'🍽️',
+    items:[
+      'Salada à vontade + verdura refogada + 1 col. azeite',
+      '2 col. arroz branco + 1 concha feijão',
+      '1 bife pequeno grelhado (Filé / Alcatra / Patinho)',
+      '200ml suco natural laranja ou limão'
+    ]
+  },
+  {
+    time:'15:30', name:'Lanche da Tarde', icon:'🍫',
+    items:[
+      '1 iogurte proteico desnatado',
+      '<span class="alt">OU: 1 snack integral Mãe Terra Zooreta (45g)</span>',
+      '<span class="alt">OU: 1 barra proteína (DUX / Bio2 / Bold)</span>'
+    ]
+  },
+  {
+    time:'21:00', name:'Jantar', icon:'🌙',
+    items:[
+      'Salada à vontade + verdura refogada + 1 col. azeite',
+      '2 pegadores de macarrão com molho de tomate OU 2 fatias pão integral',
+      '1 filé frango grelhado OU queijo branco + 2 fatias peito de peru',
+      '1 fatia grossa de melancia',
+      '½ dose Multivitamínico + 1 Ômega-3 (1g)'
+    ]
+  },
+];
+
+const POS_TREINO = {
+  corrida: ['1 Bananinha de Paraibuna com açúcar', 'OU 5 sachês de mel — imediatamente após'],
+  musculacao: ['1 dose Whey DUX Chocolate Avelã + 1 col. sobremesa de mel', '1 bananinha pequena com açúcar — imediatamente após'],
+  longo: ['Gel de carboidrato no km do meio + água ao longo', '1 Bananinha imediatamente ao terminar']
+};
+
+const SUPPLS = [
+  { name:'Multivitamínico', dose:'½ dose (manhã)', time:'Café da manhã', color:'#a78bfa' },
+  { name:'Ômega-3', dose:'1g', time:'Café da manhã', color:'#4a9fd4' },
+  { name:'Multivitamínico', dose:'½ dose (noite)', time:'Jantar', color:'#a78bfa' },
+  { name:'Ômega-3', dose:'1g', time:'Jantar', color:'#4a9fd4' },
+  { name:'Whey DUX', dose:'1 dose + mel', time:'Pós-musculação', color:'#3fb950' },
+];
+
+const WEEKS_META = [
+  {label:'S1',phase:'Consolidação',dates:'31 Mar–6 Abr'},
+  {label:'S2',phase:'Consolidação',dates:'7–13 Abr'},
+  {label:'S3',phase:'Consolidação',dates:'14–20 Abr'},
+  {label:'S4',phase:'Manutenção',dates:'21–27 Abr'},
+  {label:'S5',phase:'Taper',dates:'28 Abr–4 Mai'},
+  {label:'S6',phase:'Taper',dates:'5–10 Mai'},
+];
+
+// RACE DAY TIMELINE
+const TL = [
+  {sec:'Manhã',items:[
+    {t:'05:30',title:'Acordar',desc:'500ml água imediatamente. Sem correr para comer.',color:'#4a9fd4'},
+    {t:'05:45',title:'Café da manhã',desc:'Arroz branco ou pão integral + banana. Nada novo. Café se habitual.',color:'#e6a817'},
+    {t:'06:30',title:'Saída para o largue',desc:'Metrô ou táxi. Chegar com 60–90 min de antecedência.',color:'#4a9fd4'},
+  ]},
+  {sec:'Pré-largada',items:[
+    {t:'07:30',title:'Aquecimento',desc:'10 min caminhada + mobilidade. Nada intenso.',color:'#3fb950'},
+    {t:'07:45',title:'Gel de ativação',desc:'1 gel + água. 15 min antes da largada.',color:'#e6a817'},
+    {t:'08:00',title:'Últimos preparos',desc:'Confirma número no peito, chip, gel na cinta.',color:'#a78bfa'},
+    {t:'08:30',title:'🏁 LARGADA',desc:'Primeiros 5km abaixo do pace alvo. Não vai na euforia.',color:'#a78bfa'},
+  ]},
+  {sec:'Durante a prova',items:[
+    {t:'a cada posto',title:'Hidratação',desc:'Água a cada posto. Isotônico se disponível nos km finais.',color:'#4a9fd4'},
+    {t:'conforme plano',title:'Géis',desc:'Conforme calculadora abaixo. Não pula, não adianta.',color:'#e6a817'},
+    {t:'km 30',title:'Check mental',desc:'Avalia pace e esforço. O muro começa aqui — mantém o ritmo.',color:'#3fb950'},
+  ]},
+  {sec:'Pós-prova',items:[
+    {t:'finish',title:'Recuperação imediata',desc:'Bananinha Paraibuna ou 5 sachês de mel. Imediatamente.',color:'#3fb950'},
+    {t:'+30 min',title:'Isotônico + fruta',desc:'Repõe eletrólitos. Senta, respira.',color:'#3fb950'},
+    {t:'+1h',title:'Refeição real + celebração 🍺',desc:'Carboidrato + proteína. Você fez Copenhagen.',color:'#a78bfa'},
+  ]},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────
+let S = {};
+try { S = JSON.parse(localStorage.getItem('mhub_fred')||'{}'); } catch(e){}
+if (!S.checks) S.checks = {};
+if (!S.tlChecks) S.tlChecks = {};
+if (!S.sChecks) S.sChecks = {};
+if (!S.targetPace) S.targetPace = '4:30:00';
+function save() { try{localStorage.setItem('mhub_fred',JSON.stringify(S));}catch(e){} }
+
+// ── HELPERS ───────────────────────────────────────────────────────
+const today = new Date();
+const todayDow = (today.getDay() + 6) % 7; // 0=Mon
+const todayData = WEEK_SCHED[todayDow];
+
+function daysUntil(d) { return Math.ceil((d - new Date()) / 86400000); }
+function fmtDate(d) { return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'}); }
+function fmtShort(d) { return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); }
+
+function calcPaceSegs(timeStr) {
+  const p = timeStr.split(':').map(Number);
+  const sec = (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
+  const avg = sec/42.195;
+  const fmt = s=>`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}/km`;
+  return { early:fmt(avg*1.04), mid:fmt(avg), late:fmt(avg*0.97) };
+}
+
+function calcGels(timeStr, freqMin=35) {
+  const p = timeStr.split(':').map(Number);
+  const totalMin = (p[0]||0)*60+(p[1]||0)+(p[2]||0)/60;
+  const avgPace = totalMin/42.195;
+  const gels = [];
+  let t = freqMin;
+  while(t < totalMin-10) {
+    gels.push({ min:Math.round(t), km:Math.round(t/avgPace*10)/10 });
+    t += freqMin;
+  }
+  return gels;
+}
+
+// ── TODAY ─────────────────────────────────────────────────────────
+function renderToday() {
+  const diff = daysUntil(RACE);
+  document.getElementById('cd-num').textContent = diff > 0 ? diff : '🏁';
+  document.getElementById('race-days').textContent = diff > 0 ? diff : '🏁';
+
+  // Banner
+  const isLong = todayData.run?.type === 'Treino Longo';
+  const isRegen = todayData.run?.type === 'Regenerativo';
+  const hasGym = todayData.gym?.length > 0;
+  const hasRun = !!todayData.run;
+
+  const tags = [
+    hasRun ? `<span class="tag t-run">${todayData.run.type}</span>` : '',
+    ...( todayData.gym.map(g => `<span class="tag t-gym">${g}</span>`) ),
+    (!hasRun && !hasGym) ? '<span class="tag t-rest">Descanso</span>' : ''
+  ].filter(Boolean).join('');
+
+  document.getElementById('today-banner').innerHTML = `
+    <div class="tb-date">${fmtDate(today)}</div>
+    <div class="tb-day">${todayData.day.toUpperCase()}</div>
+    <div class="tb-tags">${tags}</div>`;
+
+  // RUN BLOCK
+  const runEl = document.getElementById('run-block');
+  if (hasRun) {
+    runEl.innerHTML = `
+      <div class="today-block" style="margin-top:12px;">
+        <div class="tb-head">
+          <div class="tb-icon">🏃</div>
+          <div class="tb-info">
+            <div class="tb-block-title">${todayData.run.type}</div>
+            <div class="tb-block-sub">Manhã · corrida</div>
+          </div>
+          <div class="tb-badge">${todayData.run.pace}</div>
+        </div>
+        <div class="tb-body">
+          <div class="tb-row">
+            <div class="tb-dot" style="background:#4ab8d4"></div>
+            <div class="tb-row-text">${todayData.run.desc}</div>
+          </div>
+          ${isLong ? `<div class="tb-row"><div class="tb-dot" style="background:#e6a817"></div><div class="tb-row-text"><b>Gel no km do meio</b> + água a cada posto</div></div>` : ''}
+          ${isRegen ? `<div class="tb-row"><div class="tb-dot" style="background:#3fb950"></div><div class="tb-row-text">Pace conversacional — sem forçar. Recuperação ativa.</div></div>` : ''}
+          <div class="tb-row">
+            <div class="tb-dot" style="background:#3fb950"></div>
+            <div class="tb-row-text"><b>Pós-corrida:</b> ${isLong ? POS_TREINO.longo[0] : POS_TREINO.corrida[0]}</div>
+          </div>
+        </div>
+      </div>`;
+  } else { runEl.innerHTML = ''; }
+
+  // GYM BLOCK
+  const gymEl = document.getElementById('gym-block');
+  if (hasGym) {
+    const gymItems = todayData.gym.map(g => {
+      const exercises = {
+        'Sup A': ['Supino Halteres Unilateral — 4×8', 'Peitoral Fly — 3×12', 'Desenvolvimento Halteres — 3×10', 'Deltoide Posterior Máq. — 3×10', 'Tríceps Cabo Overhead — 3×10', 'Tríceps Testa — 3×10'],
+        'Sup B': ['Remada Baixa Cabo — 4×8', 'Remada Unilateral — 3×10', 'Puxada Polia Supinada — 3×8', 'Rosca Direta Barra — 3×8', 'Rosca Unilateral — 3×8'],
+        'Perna': ['Agachamento c/ Elástico — 3×15', 'Abdução Cabo — 3×15', 'Glute Bridge Unilateral — 3×12', 'Step Up Banco — 3×10', 'Panturrilha — 3×20', 'Wall Sit — 3×40s'],
+        'Core':  ['Dead Bug — 3×8/lado', 'Pallof Press — 3×10/lado', 'Leg Raise — 3×15', 'Bird-Dog — 3×10/lado', 'Ab Wheel — 3×8', 'Hollow Body Hold — 3×20s'],
+      };
+      return `
+        <div style="margin-bottom:8px;">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:6px;">${g}</div>
+          ${(exercises[g]||[]).map(e=>`<div class="tb-row"><div class="tb-dot" style="background:#6bb4e0"></div><div class="tb-row-text">${e}</div></div>`).join('')}
+        </div>`;
+    }).join('<div style="height:8px;border-top:1px solid var(--bor);margin:4px 0;"></div>');
+
+    gymEl.innerHTML = `
+      <div class="today-block" style="margin-top:10px;">
+        <div class="tb-head">
+          <div class="tb-icon">🏋️</div>
+          <div class="tb-info">
+            <div class="tb-block-title">Musculação — ${todayData.gym.join(' + ')}</div>
+            <div class="tb-block-sub">Tarde · ${hasRun ? 'mín. 4h após a corrida' : 'qualquer horário'}</div>
+          </div>
+        </div>
+        <div class="tb-body">${gymItems}
+          <div class="tb-row" style="margin-top:4px;">
+            <div class="tb-dot" style="background:#3fb950"></div>
+            <div class="tb-row-text"><b>Pós-musculação:</b> ${POS_TREINO.musculacao[0]}</div>
+          </div>
+        </div>
+      </div>`;
+  } else { gymEl.innerHTML = ''; }
+
+  // NUTRITION BLOCK — simplified daily view
+  const nutrEl = document.getElementById('nutrition-block');
+  nutrEl.innerHTML = `
+    <div class="today-block" style="margin-top:10px;">
+      <div class="tb-head">
+        <div class="tb-icon">🥗</div>
+        <div class="tb-info">
+          <div class="tb-block-title">Nutrição de Hoje</div>
+          <div class="tb-block-sub">${isLong ? 'Dia de treino longo — reforça o carbo' : hasRun && hasGym ? 'Dia de treino duplo' : hasRun || hasGym ? 'Dia de treino' : 'Dia de descanso'}</div>
+        </div>
+      </div>
+      <div class="tb-body">
+        ${hasRun ? `<div class="tb-row"><div class="tb-dot" style="background:#e6a817"></div><div class="tb-row-text"><b>Pré-treino:</b> 1 fruta — antes de sair para correr</div><div class="tb-row-time">manhã</div></div>` : ''}
+        <div class="tb-row"><div class="tb-dot" style="background:#4a9fd4"></div><div class="tb-row-text"><b>Café 7h35:</b> Pão integral + queijo minas + suco uva</div><div class="tb-row-time">07:35</div></div>
+        <div class="tb-row"><div class="tb-dot" style="background:#4a9fd4"></div><div class="tb-row-text"><b>Almoço 12h15:</b> Salada + arroz + feijão + bife grelhado</div><div class="tb-row-time">12:15</div></div>
+        <div class="tb-row"><div class="tb-dot" style="background:#4a9fd4"></div><div class="tb-row-text"><b>Lanche 15h30:</b> Iogurte proteico OU barra proteína DUX/Bold</div><div class="tb-row-time">15:30</div></div>
+        <div class="tb-row"><div class="tb-dot" style="background:#4a9fd4"></div><div class="tb-row-text"><b>Jantar 21h:</b> Salada + macarrão ou pão integral + frango</div><div class="tb-row-time">21:00</div></div>
+      </div>
+    </div>`;
+
+  // SUPPLEMENTS
+  const suppEl = document.getElementById('suppl-block');
+  const todaySuppl = hasGym
+    ? SUPPLS
+    : SUPPLS.filter(s => s.time !== 'Pós-musculação');
+
+  suppEl.innerHTML = `
+    <div class="today-block" style="margin-top:10px;">
+      <div class="tb-head">
+        <div class="tb-icon">💊</div>
+        <div class="tb-info">
+          <div class="tb-block-title">Suplementação</div>
+          <div class="tb-block-sub">Hoje · ${todaySuppl.length} itens</div>
+        </div>
+      </div>
+      <div class="tb-body">
+        ${todaySuppl.map((s,i) => {
+          const key = `suppl_${today.toDateString()}_${i}`;
+          const done = !!S.sChecks[key];
+          return `<div class="suppl-check-row${done?' done':''}" onclick="toggleSuppl('${key}')">
+            <div class="sc-dot" style="background:${s.color}"></div>
+            <div class="sc-info"><div class="sc-name">${s.name}</div><div class="sc-dose">${s.dose}</div></div>
+            <div class="sc-time">${s.time}</div>
+            <div class="sc-box">${done?'✓':''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  // GEL BLOCK (only on long run days)
+  const gelEl = document.getElementById('gel-block');
+  if (isLong) {
+    const gels = calcGels(S.targetPace);
+    gelEl.innerHTML = `
+      <div class="gel-strip" style="margin-top:0;margin-bottom:0;">
+        <div class="gel-strip-title">Plano de Gel — ${S.targetPace} · a cada 35 min</div>
+        <div class="gel-chips">
+          ${gels.map((g,i)=>`<div class="gel-chip">Gel ${i+1} · km ${g.km}</div>`).join('')}
+        </div>
+      </div>`;
+  } else { gelEl.innerHTML = ''; }
+}
+
+function toggleSuppl(key) {
+  S.sChecks[key] = !S.sChecks[key];
+  save();
+  renderToday();
+}
+
+// ── TRAINING ──────────────────────────────────────────────────────
+let curWeek = (() => {
+  const ms = today - TRAIN_START;
+  const w = Math.floor(ms/604800000);
+  return Math.min(Math.max(w,0),5);
+})();
+
+function renderTraining() {
+  const tabs = document.getElementById('wtabs');
+  tabs.innerHTML = WEEKS_META.map((w,i)=>
+    `<button class="wtab${curWeek===i?' active':''}" onclick="selWeek(${i})">${w.label}<br><span style="font-size:9px;opacity:.7;">${w.phase}</span></button>`
+  ).join('');
+
+  const wStart = new Date(TRAIN_START);
+  wStart.setDate(TRAIN_START.getDate() + curWeek*7);
+
+  document.getElementById('train-days').innerHTML = WEEK_SCHED.map((day, di) => {
+    const dt = new Date(wStart); dt.setDate(wStart.getDate()+di);
+    const dateStr = fmtShort(dt);
+    const isToday = dt.toDateString() === today.toDateString();
+    const key = `train_s${curWeek}_${di}`;
+    const done = !!S.checks[key];
+    const isRest = !day.run && !day.gym.length;
+
+    if (isRest) return `
+      <div class="rest-card">
+        <div class="dc-head"><div class="dc-day">${day.day}</div><span style="font-size:11px;color:var(--mut);">${dateStr}</span></div>
+        <div class="dc-tags"><span class="tag t-rest">Descanso</span></div>
+      </div>`;
+
+    const tags = [
+      day.run ? `<span class="tag t-run">${day.run.type}</span>` : '',
+      ...(day.gym.map(g=>`<span class="tag t-gym">${g}</span>`))
+    ].filter(Boolean).join('');
+
+    return `
+      <div class="day-card${isToday?' today-highlight':''}">
+        <div class="dc-head">
+          <div>
+            <div class="dc-day">${day.day}${isToday?' <span style="font-size:11px;color:var(--acc);font-family:\'DM Sans\',sans-serif;font-weight:400;">· hoje</span>':''}</div>
+            <div class="dc-date">${dateStr}</div>
+          </div>
+          <div class="dc-done" onclick="toggleTrain('${key}')">${done?'✓ Feito':'— marcar'}</div>
+        </div>
+        <div class="dc-tags">${tags}</div>
+        ${day.run ? `<div class="dc-run-detail"><b>${day.run.type}:</b> ${day.run.desc} · <b>Pace:</b> ${day.run.pace}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function selWeek(i) { curWeek=i; renderTraining(); }
+function toggleTrain(key) { S.checks[key]=!S.checks[key]; save(); renderTraining(); }
+
+// ── NUTRITION ─────────────────────────────────────────────────────
+function renderNutrition() {
+  const gels = calcGels(S.targetPace);
+
+  document.getElementById('nutr-content').innerHTML = `
+    <div class="body-card">
+      <div class="sec-title">Composição Corporal · Fev 2026</div>
+      <div class="body-stats">
+        <div class="bstat"><div class="bstat-val" style="color:#4a9fd4">76.7</div><div class="bstat-lbl">kg</div></div>
+        <div class="bstat"><div class="bstat-val" style="color:#3fb950">12.9%</div><div class="bstat-lbl">gordura</div></div>
+        <div class="bstat"><div class="bstat-val" style="color:#e6a817">28.5</div><div class="bstat-lbl">kg músculo</div></div>
+        <div class="bstat"><div class="bstat-val">22.2</div><div class="bstat-lbl">IMC</div></div>
+        <div class="bstat"><div class="bstat-val">186</div><div class="bstat-lbl">cm</div></div>
+        <div class="bstat"><div class="bstat-val" style="color:#a78bfa">39</div><div class="bstat-lbl">anos</div></div>
+      </div>
+    </div>
+
+    <div class="pre-card">
+      <div class="pre-title">Pós-treino — Regras da Mariana</div>
+      <div class="pre-row"><b>Corrida:</b> Bananinha Paraibuna com açúcar OU 5 sachês de mel — imediatamente</div>
+      <div class="pre-row"><b>Musculação/Tênis:</b> Whey DUX Chocolate Avelã + 1 col. mel — chegando em casa</div>
+      <div class="pre-row"><b>Treino longo:</b> Gel no meio da corrida + água ao longo · bananinha ao terminar</div>
+      <div class="pre-row"><b>Durante (>1h):</b> 4 sachês mel OU bananinha Paraibuna s/ açúcar OU 1 gel</div>
+    </div>
+
+    ${MEALS.map(m=>`
+      <div class="meal-card">
+        <div class="meal-head">
+          <div>
+            <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin-bottom:2px;">${m.time}</div>
+            <div class="meal-name">${m.icon} ${m.name}</div>
+          </div>
+        </div>
+        <div class="meal-body">
+          ${m.items.map(item=>`<div class="meal-item">${item}</div>`).join('')}
+        </div>
+      </div>`).join('')}
+
+    <div class="sec-title" style="padding-top:8px;">Suplementação Diária</div>
+    ${SUPPLS.map(s=>`
+      <div class="meal-card">
+        <div class="meal-body">
+          <div class="meal-item"><b>${s.name}</b> · ${s.dose} · <span style="color:var(--mut)">${s.time}</span></div>
+        </div>
+      </div>`).join('')}
+
+    <div class="sec-title" style="padding-top:8px;">Calculadora de Gel · ${S.targetPace}</div>
+    <div class="gel-plan-card">
+      <div class="gpc-title">${gels.length} géis · frequência 35 min</div>
+      <div class="gpc-chips">
+        ${gels.map((g,i)=>`<div class="gpc-chip">Gel ${i+1} · km ${g.km}</div>`).join('')}
+      </div>
+    </div>
+
+    <div style="height:12px;"></div>`;
+}
+
+// ── RACE DAY ──────────────────────────────────────────────────────
+function renderRaceDay() {
+  const segs = calcPaceSegs(S.targetPace);
+  const gels = calcGels(S.targetPace);
+
+  document.getElementById('rd-content').innerHTML = `
+    <div class="rd-hero">
+      <div class="rd-lbl">Race Day Planner</div>
+      <div class="rd-title">COPENHAGEN<br>MARATHON</div>
+      <div class="rd-sub">10 de maio de 2026 · 08:30 · Copenhagen, DK</div>
+    </div>
+
+    <div class="pace-card">
+      <div class="pace-lbl">Estratégia de Pace</div>
+      <div class="pace-target">
+        <span style="font-size:13px;color:var(--txt2);">Tempo alvo:</span>
+        <input class="pace-input" id="pace-inp" type="text" value="${S.targetPace}" oninput="updatePace(this.value)">
+      </div>
+      <div class="pace-segs">
+        <div class="ps"><div class="ps-lbl">0–10km</div><div class="ps-val g" id="ps-e">${segs.early}</div></div>
+        <div class="ps"><div class="ps-lbl">10–30km</div><div class="ps-val" id="ps-m">${segs.mid}</div></div>
+        <div class="ps"><div class="ps-lbl">30–42km</div><div class="ps-val y" id="ps-l">${segs.late}</div></div>
+      </div>
+    </div>
+
+    <div class="gel-plan-card">
+      <div class="gpc-title">Plano de Gel · ${gels.length} géis · a cada 35 min</div>
+      <div class="gpc-chips">
+        ${gels.map((g,i)=>`<div class="gpc-chip">Gel ${i+1} · km ${g.km} · min ${g.min}</div>`).join('')}
+      </div>
+    </div>
+
+    ${TL.map((sec,si)=>`
+      <div class="tl-sec-lbl">${sec.sec}</div>
+      ${sec.items.map((item,ii)=>{
+        const key=`tl_${si}_${ii}`;
+        const done=!!S.tlChecks[key];
+        return `<div class="tl-item${done?' done':''}" onclick="toggleTL('${key}')">
+          <div class="tl-time">${item.t}</div>
+          <div class="tl-dot" style="background:${item.color}"></div>
+          <div class="tl-body"><div class="tl-title">${item.title}</div><div class="tl-desc">${item.desc}</div></div>
+          <div class="tl-chk">${done?'✓':''}</div>
+        </div>`;
+      }).join('')}`).join('')}
+
+    <div style="height:16px;"></div>`;
+}
+
+function updatePace(v) {
+  S.targetPace = v; save();
+  const s = calcPaceSegs(v);
+  const e=document.getElementById('ps-e');
+  const m=document.getElementById('ps-m');
+  const l=document.getElementById('ps-l');
+  if(e)e.textContent=s.early;
+  if(m)m.textContent=s.mid;
+  if(l)l.textContent=s.late;
+}
+
+function toggleTL(key) {
+  S.tlChecks[key]=!S.tlChecks[key]; save();
+  const el=document.querySelector(`[onclick="toggleTL('${key}')"]`);
+  if(el){
+    el.classList.toggle('done',S.tlChecks[key]);
+    const chk=el.querySelector('.tl-chk');
+    if(chk)chk.textContent=S.tlChecks[key]?'✓':'';
+  }
+}
+
+// ── NAV ───────────────────────────────────────────────────────────
+function go(name, btn) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='treino') renderTraining();
+  if(name==='nutri') renderNutrition();
+  if(name==='raceday') renderRaceDay();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+renderToday();
+renderTraining();
+</script>
+</body>
+</html>
